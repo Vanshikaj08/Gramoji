@@ -13,6 +13,7 @@ import {
   useGetCurrentUser,
 } from "@/lib/react-query/queriesAndMutations";
 import type { IPost } from "../../../types";
+import { Loader } from "lucide-react";
 
 type PostStatsProps = {
   post: IPost;
@@ -21,19 +22,19 @@ type PostStatsProps = {
 
 const PostStats = ({ post, userId }: PostStatsProps) => {
   const location = useLocation();
-  const likesList = post.likes.map((user: IPost) => user.$id);
+  const likesList = post?.likes.map((user: IPost) => user.$id);
 
   const [likes, setLikes] = useState<string[]>(likesList);
   const [isSaved, setIsSaved] = useState(false);
 
   const { mutate: likePost } = useLikePost();
-  const { mutate: savePost } = useSavePost();
-  const { mutate: deleteSavePost } = useDeleteSavedPost();
+  const { mutate: savePost,isPending:isSavingPost } = useSavePost();
+  const { mutate: deleteSavePost ,isPending: isDeletingSaved} = useDeleteSavedPost();
 
   const { data: currentUser } = useGetCurrentUser();
 
   const savedPostRecord = currentUser?.save.find(
-    (record: IPost) => record.post.$id === post.$id
+    (record: IPost) => record.post?.$id === post?.$id
   );
 
   useEffect(() => {
@@ -54,7 +55,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
     }
 
     setLikes(likesArray);
-    likePost({ postId: post.$id, likesArray });
+    likePost({ postId: post?.$id || '', likesArray });
   };
 
   const handleSavePost = (
@@ -62,7 +63,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   ) => {
     e.stopPropagation();
     
-    // const savedPostRecord =currentUser?.save.find((record:IPost)=>record.$id === post.$id);
+    // const savedPostRecord =currentUser?.save.find((record:IPost)=>record.$id === post?.$id);
 
 
     if (savedPostRecord) {
@@ -70,7 +71,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
       return deleteSavePost(savedPostRecord.$id);
     }
    else{
-    savePost({ userId: userId, postId: post.$id });
+    savePost({ postId: post?.$id || '',userId: userId});
     setIsSaved(true);
 }
     
@@ -84,6 +85,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
     <div
       className={`flex justify-between items-center z-20 ${containerStyles}`}>
       <div className="flex gap-2 mr-5">
+    
         <img
           src={`${
             checkIsLiked(likes, userId)
@@ -100,7 +102,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
       </div>
 
       <div className="flex gap-2">
-        <img
+        {isSavingPost || isDeletingSaved ?  <Loader /> :<img
           src={`${isSaved ?
              "/photos/icons/saved.svg" 
              : "/photos/icons/save.svg"
@@ -111,7 +113,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
           height={20}
           className="cursor-pointer"
           onClick={(e) => handleSavePost(e)}
-        />
+        />}
       </div>
     </div>
   );

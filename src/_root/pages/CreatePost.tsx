@@ -15,10 +15,10 @@ const CreatePost = () => {
         />
         <h2 className='h4-bold md:h4-bold text-left  w-full'> Create Post</h2>
       </div>
-      <PostForm/>
+      <PostForm action='Create'/>
     </div>
     </div>
-  )
+  ) 
 }
 
 export default CreatePost
